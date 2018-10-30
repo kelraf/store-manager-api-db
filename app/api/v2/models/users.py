@@ -1,35 +1,48 @@
 from app.api import Tools 
 import uuid
+from app.api.v2.models import conn, cur
 
 tools = Tools()
-all_users = tools.all_users()
-validate_data = tools.validate_user_info()
+# all_users = tools.all_users()
+
 
 
 class UserDetails():
 
-    def register(self, username, email, phone_number, password, confirm_password):
-        user_info = {}
+    @staticmethod
+    def register(username, email, phone_number, password, confirm_password):
 
-        #Check If there are users in the database
-        if len(all_users) > 0:
-            validate = validate_data(username, email, phone_number, password, confirm_password)
+        user = tools.user_exists(email, phone_number, username)
+        if user == False:
+
+            #If The user does not exist validate the information provided and store the user in the database
+            validate = tools.validate_user_info(username, email, phone_number, password, confirm_password)
 
             if validate == True:
-                for user in all_users:
-                    if user['email'] == email:
-                        return "User already exists"
-                    elif user['username'] == username:
-                        return "Username already exits"
-                    elif user['phone_number'] == phone_number:
-                        return "Phone number already exits"
-                else:
-                    user_info['username'] = username
-                    user_info['email'] = email
-                    user_info['phone_number'] = phone_number
-                    user_info['password'] = password
-                    user_info['confirm_password'] = confirm_password
-                    user_info['id'] = uuid.uuid1()
-                    user_info['admin'] = False
+                query = """ INSERT INTO users(username, email, phone_number, password, confirm_password) VALUES(%s, %s, %s, %s, %s)"""
 
-                    store_user = """ INSERT INTO users; (username, email, phone_number, password, confirm_password) """
+                cur.execute(query, (username, email, phone_number, password, confirm_password))
+                conn.commit()
+                return True
+            return validate
+
+        #If user does exist 
+        return "User already Exists"
+
+    #The login method
+    @staticmethod
+    def login(username, password):
+        users_class = UserDetails()
+        users = users_class.get_all_users()
+
+        for user in users:
+            if user['username'] == username and user['password'] == password:
+                return True
+        else:
+            return "The user does not exist"
+
+    @staticmethod
+    def get_all_users():
+        cur.execute(" SELECT * FROM users ")
+        users = cur.fetchall()
+        return users

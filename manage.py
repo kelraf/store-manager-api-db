@@ -42,9 +42,9 @@ class DatabaseSetup():
                     id serial PRIMARY KEY NOT NULL,
                     username VARCHAR (50) NOT NULL,
                     email VARCHAR (100) NOT NULL,
+                    phone_number VARCHAR (15) NOT NULL,
                     password VARCHAR (60) NOT NULL,
-                    confirm_password VARCHAR (60) NOT NULL,
-                    admin BOOLEAN NOT NULL)
+                    confirm_password VARCHAR (60) NOT NULL )
             """
 
         t2 = """ CREATE TABLE IF NOT EXISTS products(

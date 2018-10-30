@@ -39,13 +39,25 @@ class Tools():
             else:
                 return True
 
-    #A method That Gets all The Users
     @staticmethod
-    def all_users():
-
-        cur.execute('SELECT * FROM users')
+    def get_all_users():
+        cur.execute(" SELECT * FROM users ")
         users = cur.fetchall()
         return users
+
+    # The method checks whether a user with similar email, username or phone no exists in the database
+    @staticmethod
+    def user_exists(email, phone_number, username):
+        tools = Tools()
+        all_users = tools.get_all_users()
+
+        for user in all_users:
+            if user['email'] == email or user['phone_number'] == phone_number or user['username'] == username:
+                return True
+        else:
+            return False
+
+
 
 
 

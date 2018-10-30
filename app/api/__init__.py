@@ -1,6 +1,7 @@
 """ These class defines a set of functions to used to validate information in the entire application """
 
 import re
+from passlib.hash import pbkdf2_sha256 as sha256
 from app.api.v2.models import cur
 
 class Tools():
@@ -56,6 +57,20 @@ class Tools():
                 return True
         else:
             return False
+
+    #The method is used to hash password passed by the users
+    @staticmethod
+    def generate_hash(password):
+        hashed_pass = sha256.hash(password)
+        return hashed_pass
+
+    #The method verifies a hashed password
+    @staticmethod
+    def verify_hash(password, hash):
+        verified = sha256.verify(password, hash)
+        return True
+
+    
 
 
 

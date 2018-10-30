@@ -17,4 +17,5 @@ class ProductsDetails():
         query = """ SELECT * FROM products """
         cur.execute(query)
         products = cur.fetchall()
+        print(products)
         return products

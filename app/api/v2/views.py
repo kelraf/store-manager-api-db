@@ -1,6 +1,12 @@
 from flask import jsonify, make_response, request, json, request
 from flask_restful import Resource
+import datetime
+from passlib.hash import pbkdf2_sha256 as sha256
+from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required, jwt_refresh_token_required, get_jwt_identity, get_raw_jwt
+
+#Local imports
 from .models.users import UserDetails as users
+from app.api import Tools as tools
 from .models.products import ProductsDetails as products
 from app.api.v2.models import conn, cur
 
@@ -9,6 +15,7 @@ from app.api.v2.models import conn, cur
 
 """ Routes for Users """
 class Users(Resource):
+    @jwt_required
     def post(self):
         user_info = request.get_json()
 
@@ -24,6 +31,7 @@ class Users(Resource):
             return make_response(jsonify({"Status" : "Ok", "Message" : "User Registered Successfully"}), 201)
         return make_response(jsonify({"Status" : "CONFLICT", "Message" : "User Not Created", "Reason" : response}), 409)
 
+    @jwt_required
     def get(self):
         all_users = users.get_all_users()
         if len(all_users) > 0:
@@ -33,9 +41,10 @@ class Users(Resource):
 class Get_user_by_id(Resource):
 
     #Get user by Id
+    @jwt_required
     def get(self, id):
         query = """ SELECT * FROM users WHERE id = %s """
-        user = cur.execute(query, (id))
+        user = cur.execute(query, (id,))
         if user:
             return make_response(jsonify({"Status" : "Ok", "Message" : "Successful", "user" : user}), 200)
         return make_response(jsonify({"Status" : "NOT FOUND", "Message" : "User does not exists"}), 200)
@@ -46,18 +55,28 @@ class Login(Resource):
 
         username = user_info['username']
         password = user_info['password']
+        current_user = users.login(username)
+        if current_user:
+            verified_pass = tools.verify_hash(password, current_user['password'])
+            if verified_pass != True:
+                return make_response(jsonify({"Status" : "NOT FOUND", "Message" : "Invalid Password"}), 404)
+            
+            #Generate access token
+            exp = datetime.timedelta(minutes = 60)
+            identity = current_user
+            access_token = create_access_token(identity, exp)
+            refresh_token = create_refresh_token(identity = current_user)
 
-        response = users.login(username, password)
-        if response == True:
-            return make_response(jsonify({"Status" : "Ok", "Message" : "Successfully Logged in"}), 200)
-        else:
-            return make_response(jsonify({"Status" : "NOT FOUND", "Message" : response}), 404)
+            return make_response(jsonify({"Status" : "Ok", "Message" : "Successfully Logged in as {}".format(username),
+            "access_token" : access_token, "refresh_token" : refresh_token}), 200)
+        return make_response(jsonify({"Status" : "NOT FOUND", "Message" : current_user}), 404)
 
 
 """ Routes for Products """
 
 class Products(Resource):
-
+    
+    @jwt_required
     def post(self):
         product_info = request.get_json()
 
@@ -73,13 +92,10 @@ class Products(Resource):
         else:
             return make_response(jsonify({"Status" : "CONFLICT", "Message" : "Product Product not created"}), 409)
 
+    @jwt_required
     def get(self):
-        response = products.get_all_products()
-
+        response = products.get_all_products()        
         if len(response) > 0:
-            return make_response(jsonify({"Status" : "Ok", "Message" : "Successfull", "Products" : response, "No Of products" : len(response)}), 200)
-        else:
-            return make_response(jsonify({"Status" : "NOT FOUND", "Message" : "The Database does not have products"}), 404)
-        
-        
-    
+            return make_response(jsonify({"Status" : "Ok", "Message" : "Successfull", "Products" : response, "No of Products" : len(response)}), 200)
+        return make_response(jsonify({"Status" : "NOT FOUND", "Message" : "The Database does not have products"}), 404)
+

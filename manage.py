@@ -14,6 +14,7 @@ class DatabaseSetup():
             database='store-manager', host='localhost', password='kelraf', user='postgres', port='5432'
         )
         self.cursor = self.connect.cursor(cursor_factory = RealDictCursor)
+        self.cursor2 = self.connect.cursor()
       
     def create_tables(self):
         queries = self.tables()
@@ -43,16 +44,16 @@ class DatabaseSetup():
                     username VARCHAR (50) NOT NULL,
                     email VARCHAR (100) NOT NULL,
                     phone_number VARCHAR (15) NOT NULL,
-                    password VARCHAR (60) NOT NULL,
-                    confirm_password VARCHAR (60) NOT NULL )
+                    password VARCHAR (300) NOT NULL,
+                    confirm_password VARCHAR (300) NOT NULL )
             """
 
         t2 = """ CREATE TABLE IF NOT EXISTS products(
                     id serial PRIMARY KEY NOT NULL,
                     product_name VARCHAR (100) NOT NULL,
                     product_category VARCHAR (60) NOT NULL,
-                    buying_price numeric (15) NOT NULL,
-                    selling_price numeric (15) NOT NULL,
+                    buying_price double precision NOT NULL,
+                    selling_price double precision NOT NULL,
                     description VARCHAR (200) NOT NULL
                 )
 

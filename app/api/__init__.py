@@ -55,17 +55,6 @@ class Tools():
         else:
             return False
 
-    #The method is used to hash password passed by the users
-    @staticmethod
-    def generate_hash(password):
-        hashed_pass = sha256.hash(password)
-        return hashed_pass
-
-    #The method verifies a hashed password
-    @staticmethod
-    def verify_hash(password, hash):
-        verified = sha256.verify(password, hash)
-        return True
 
     
 

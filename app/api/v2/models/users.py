@@ -1,5 +1,6 @@
 from app.api import Tools 
 import uuid
+from werkzeug.security import generate_password_hash
 from app.api.v2.models import conn, cur, cur2
 
 tools = Tools()
@@ -12,15 +13,17 @@ class UserDetails():
 
         user = tools.user_exists(email, phone_number, username)
         if not user:
-            hash_pass = tools.generate_hash(password)
-            if hash_pass:
+            hash_pass_1 = generate_password_hash(password)
+            hash_pass_2 = generate_password_hash(confirm_password)
+
+            if hash_pass_1 and hash_pass_2:
                 #If The user does not exist validate the information provided and store the user in the database
                 validate = tools.validate_user_info(username, email, phone_number, password, confirm_password)
 
                 if validate:
                     query = """ INSERT INTO users(username, email, phone_number, password, confirm_password) VALUES(%s, %s, %s, %s, %s)"""
 
-                    cur.execute(query, (username, email, phone_number, hash_pass, confirm_password))
+                    cur.execute(query, (username, email, phone_number, hash_pass_1, hash_pass_2))
                     conn.commit()
                     return True
                 return validate
@@ -54,8 +57,8 @@ class UserDetails():
         return user
 
     @staticmethod
-    def delete_user(id):
+    def delete_user(username):
         query = """ DELETE * FROM users WHERE id = %s """
-        cur.execute(query, (id,))
+        cur.execute(query, (username))
         conn.commit()
         return True

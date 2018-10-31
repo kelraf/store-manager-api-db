@@ -1,7 +1,7 @@
 from flask import jsonify, make_response, request, json, request
 from flask_restful import Resource
 import datetime
-from passlib.hash import pbkdf2_sha256 as sha256
+from werkzeug.security import check_password_hash
 from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required, jwt_refresh_token_required, get_jwt_identity, get_raw_jwt
 
 #Local imports
@@ -41,9 +41,13 @@ class Users(Resource):
 
     def delete(self):
         user_info = request.get_json()
-        user_id = user_info['id']
+        username = user_info['username']
 
-        deleted = users.delete_user(user_id)
+        # deleted = users.delete_user(username)
+        query = """ DELETE FROM users WHERE username = %s """
+        deleted = cur.execute(query, (username,))
+        conn.commit()
+
         if deleted:
             return make_response(jsonify({"Status" : "Ok", "Message" : "Successfully Deleted The user"}), 200)
         else:
@@ -68,9 +72,10 @@ class Login(Resource):
         username = user_info['username']
         password = user_info['password']
         current_user = users.login(username)
+        print(current_user, '4567890')
         if current_user:
-            verified_pass = tools.verify_hash(password, current_user['password'])
-            if verified_pass:
+            print(current_user)
+            if check_password_hash(current_user['password'], password):
                 #Generate access token
                 exp = datetime.timedelta(minutes = 60)
                 identity = current_user
@@ -78,11 +83,12 @@ class Login(Resource):
                 refresh_token = create_refresh_token(identity = current_user)
                 return make_response(jsonify({"Status" : "Ok", "Message" : "Successfully Logged in as {}".format(username),
                 "access_token" : access_token, "refresh_token" : refresh_token}), 200)
-                
-            return make_response(jsonify({"Status" : "NOT FOUND", "Message" : "Invalid Password"}), 404)
+            else:
+                return make_response(jsonify({"Status" : "NOT FOUND", "Message" : "Invalid Password"}), 404)
 
-        
-        return make_response(jsonify({"Status" : "NOT FOUND", "Message" : current_user}), 404)
+        else:
+            print("Hello world")
+            return make_response(jsonify({"Status" : "NOT FOUND", "Message" : current_user}), 404)
 
 
 """ Routes for Products """
@@ -126,6 +132,7 @@ class Get_product_by_id(Resource):
 
 class Sales(Resource):
 
+    @jwt_required
     def post(self):
         product_info = request.get_json()
 
@@ -138,6 +145,7 @@ class Sales(Resource):
         else:
             return make_response(jsonify({"Status" : "Not Created", "Message" : sale_created})) 
 
+    @jwt_required
     def get(self):
         sales_ = sales.get_all_sales()
         if sales_:

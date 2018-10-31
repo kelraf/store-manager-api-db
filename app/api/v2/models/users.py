@@ -3,8 +3,6 @@ import uuid
 from app.api.v2.models import conn, cur, cur2
 
 tools = Tools()
-# all_users = tools.all_users()
-
 
 
 class UserDetails():
@@ -13,13 +11,13 @@ class UserDetails():
     def register(username, email, phone_number, password, confirm_password):
 
         user = tools.user_exists(email, phone_number, username)
-        if user == False:
+        if not user:
             hash_pass = tools.generate_hash(password)
             if hash_pass:
                 #If The user does not exist validate the information provided and store the user in the database
                 validate = tools.validate_user_info(username, email, phone_number, password, confirm_password)
 
-                if validate == True:
+                if validate:
                     query = """ INSERT INTO users(username, email, phone_number, password, confirm_password) VALUES(%s, %s, %s, %s, %s)"""
 
                     cur.execute(query, (username, email, phone_number, hash_pass, confirm_password))
@@ -47,3 +45,17 @@ class UserDetails():
         cur.execute(" SELECT * FROM users ")
         users = cur.fetchall()
         return users
+
+    @staticmethod
+    def get_user_id(id):
+        query = """ SELECT * FROM users WHERE id = %s """
+        cur.execute(query, (id,))
+        user = cur.fetchone()
+        return user
+
+    @staticmethod
+    def delete_user(id):
+        query = """ DELETE * FROM users WHERE id = %s """
+        cur.execute(query, (id,))
+        conn.commit()
+        return True

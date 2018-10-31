@@ -5,10 +5,7 @@ from passlib.hash import pbkdf2_sha256 as sha256
 from app.api.v2.models import cur
 
 class Tools():
-    # def __init__(self):
-    #     self.values = (int, float)
-
-    #A method to validate user information
+    
     @staticmethod
     def validate_user_info(username, email, phone_number, password, confirm_password):
 

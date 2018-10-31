@@ -63,8 +63,8 @@ class DatabaseSetup():
                     id serial PRIMARY KEY NOT NULL,
                     product_name VARCHAR (100) NOT NULL,
                     product_category VARCHAR (60) NOT NULL,
-                    product_id numeric (15) NOT NULL,
-                    selling_price numeric (15) NOT NULL,
+                    product_id double precision NOT NULL,
+                    selling_price double precision NOT NULL,
                     description VARCHAR(200) NOT NULL
                 )
             """

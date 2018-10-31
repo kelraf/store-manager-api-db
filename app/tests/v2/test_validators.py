@@ -6,8 +6,6 @@ class TestValidators(unittest.TestCase):
     def setUp(self):
         self.tools = Tools()
 
-    """ Testing Validation of User Information """
-
     def test_validation_successful(self):
         response = self.tools.validate_user_info("kelraf", "rafwa@gmail.com", "0718089771", "kelraf", "kelraf")
         self.assertEqual(response, True)

@@ -8,6 +8,7 @@ from flask_jwt_extended import create_access_token, create_refresh_token, jwt_re
 from .models.users import UserDetails as users
 from app.api import Tools as tools
 from .models.products import ProductsDetails as products
+from .models.products import SalesDetails as sales
 from app.api.v2.models import conn, cur
 
 
@@ -15,7 +16,7 @@ from app.api.v2.models import conn, cur
 
 """ Routes for Users """
 class Users(Resource):
-    @jwt_required
+    
     def post(self):
         user_info = request.get_json()
 
@@ -38,16 +39,27 @@ class Users(Resource):
             return make_response(jsonify({"Status" : "Ok", "Message" : "Successfull", "users" : all_users, "No of Users" : len(all_users)}), 200)
         return make_response(jsonify({"Status" : "NOT FOUND", "Message" : "The Database does not have any users"}), 404)
 
+    def delete(self):
+        user_info = request.get_json()
+        user_id = user_info['id']
+
+        deleted = users.delete_user(user_id)
+        if deleted:
+            return make_response(jsonify({"Status" : "Ok", "Message" : "Successfully Deleted The user"}), 200)
+        else:
+            return make_response(jsonify({"Status" : "NOT FOUND", "Message" : "The Database does not have the user"}), 404) 
+
+
 class Get_user_by_id(Resource):
 
     #Get user by Id
     @jwt_required
     def get(self, id):
-        query = """ SELECT * FROM users WHERE id = %s """
-        user = cur.execute(query, (id,))
+        
+        user = users.get_user_id(id)
         if user:
             return make_response(jsonify({"Status" : "Ok", "Message" : "Successful", "user" : user}), 200)
-        return make_response(jsonify({"Status" : "NOT FOUND", "Message" : "User does not exists"}), 200)
+        return make_response(jsonify({"Status" : "NOT FOUND", "Message" : "User does not exists"}), 404)
 
 class Login(Resource):
     def post(self):
@@ -58,17 +70,18 @@ class Login(Resource):
         current_user = users.login(username)
         if current_user:
             verified_pass = tools.verify_hash(password, current_user['password'])
-            if verified_pass != True:
-                return make_response(jsonify({"Status" : "NOT FOUND", "Message" : "Invalid Password"}), 404)
-            
-            #Generate access token
-            exp = datetime.timedelta(minutes = 60)
-            identity = current_user
-            access_token = create_access_token(identity, exp)
-            refresh_token = create_refresh_token(identity = current_user)
+            if verified_pass:
+                #Generate access token
+                exp = datetime.timedelta(minutes = 60)
+                identity = current_user
+                access_token = create_access_token(identity, exp)
+                refresh_token = create_refresh_token(identity = current_user)
+                return make_response(jsonify({"Status" : "Ok", "Message" : "Successfully Logged in as {}".format(username),
+                "access_token" : access_token, "refresh_token" : refresh_token}), 200)
+                
+            return make_response(jsonify({"Status" : "NOT FOUND", "Message" : "Invalid Password"}), 404)
 
-            return make_response(jsonify({"Status" : "Ok", "Message" : "Successfully Logged in as {}".format(username),
-            "access_token" : access_token, "refresh_token" : refresh_token}), 200)
+        
         return make_response(jsonify({"Status" : "NOT FOUND", "Message" : current_user}), 404)
 
 
@@ -98,4 +111,39 @@ class Products(Resource):
         if len(response) > 0:
             return make_response(jsonify({"Status" : "Ok", "Message" : "Successfull", "Products" : response, "No of Products" : len(response)}), 200)
         return make_response(jsonify({"Status" : "NOT FOUND", "Message" : "The Database does not have products"}), 404)
+
+
+class Get_product_by_id(Resource):
+    
+    @jwt_required
+    def get(self, id):
+        product = products.get_product_by_id(id)
+
+        if product:
+            return make_response(jsonify({"Status" : "Ok", "Message" : "Successful", "Product" : product}), 200)
+        return make_response(jsonify({"Status" : "NOT FOUND", "Message" : "Could not find the product"}), 404)
+
+
+class Sales(Resource):
+
+    def post(self):
+        product_info = request.get_json()
+
+        product_id = product_info['product_id']
+
+        sale_created = sales.create_sales(product_id)
+        if sale_created == True:
+            return make_response(jsonify({"Status" : "CREATED", "Message" : "Sale made successfully"}), 201)
+
+        else:
+            return make_response(jsonify({"Status" : "Not Created", "Message" : sale_created})) 
+
+    def get(self):
+        sales_ = sales.get_all_sales()
+        if sales_:
+            return make_response(jsonify({"Status" : "Ok", "Message" : "Successful", "Sales" : sales_}), 200)
+        else:
+            return make_response(jsonify({"Status" : "Not Found", "Message" : "No Sales Made Yet"})) 
+
+
 

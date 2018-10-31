@@ -142,7 +142,7 @@ class Sales(Resource):
         sales_ = sales.get_all_sales()
         if sales_:
             return make_response(jsonify({"Status" : "Ok", "Message" : "Successful", "Sales" : sales_}), 200)
-        else:
+        else: 
             return make_response(jsonify({"Status" : "Not Found", "Message" : "No Sales Made Yet"})) 
 
 

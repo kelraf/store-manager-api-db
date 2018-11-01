@@ -1,4 +1,4 @@
-from app.api.v2.models import conn, cur
+from ..models import conn, cur
 
 
 class ProductsDetails():

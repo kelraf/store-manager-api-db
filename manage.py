@@ -2,6 +2,8 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 import os
 import sys
+from werkzeug.security import generate_password_hash
+# from app.api import Tools as tools
 
 db_url = os.getenv('DATABASE_URL')
 
@@ -14,7 +16,6 @@ class DatabaseSetup():
             database='store-manager', host='localhost', password='kelraf', user='postgres', port='5432'
         )
         self.cursor = self.connect.cursor(cursor_factory = RealDictCursor)
-        self.cursor2 = self.connect.cursor()
       
     def create_tables(self):
         queries = self.tables()
@@ -31,10 +32,34 @@ class DatabaseSetup():
                 self.cursor = self.connect.cursor()
 
         self.connect.commit()
-        self.cursor.close()
-        self.connect.close()
+        
 
 
+    def create_admin(self):
+        #A dict to store admin details
+        admin_info = {}
+        hash_pass1 = generate_password_hash("admin1234", method='pbkdf2:sha256')
+        hash_pass2 = generate_password_hash("admin1234", method='pbkdf2:sha256')
+
+        admin_info['username'] = "admin1234"
+        admin_info['email'] = "admin@gmail.com"
+        admin_info['phone_number'] = "0712345763"
+        admin_info['admin'] = "True"
+        admin_info['password'] = hash_pass1
+        admin_info['confirm_password'] = hash_pass2
+
+        query = """ INSERT INTO users(username, email, phone_number, admin, password, confirm_password)
+                VALUES(%s, %s, %s, %s, %s, %s)"""
+        self.cursor.execute(query, (admin_info['username'], admin_info['email'], admin_info['phone_number'],
+                     admin_info['admin'], admin_info['password'], admin_info['confirm_password']))
+        self.connect.commit()   
+
+    def delete_test_admin(self, username):
+        query = """ DELETE FROM users WHERE username = %s """
+        self.cursor.execute(query, (username,))
+        self.connect.commit()
+       
+   
 
     #A method to define tables
     def tables(self):
@@ -44,6 +69,7 @@ class DatabaseSetup():
                     username VARCHAR (50) NOT NULL,
                     email VARCHAR (100) NOT NULL,
                     phone_number VARCHAR (15) NOT NULL,
+                    admin VARCHAR (50) NOT NULL,
                     password VARCHAR (300) NOT NULL,
                     confirm_password VARCHAR (300) NOT NULL )
             """
@@ -71,3 +97,5 @@ class DatabaseSetup():
 
         queries = [t1, t2, t3]
         return queries
+
+

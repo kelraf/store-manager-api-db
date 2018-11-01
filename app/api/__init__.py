@@ -1,6 +1,8 @@
 """ These class defines a set of functions to used to validate information in the entire application """
 
 import re
+import jwt
+from functools import wraps
 from passlib.hash import pbkdf2_sha256 as sha256
 from app.api.v2.models import cur
 
@@ -54,6 +56,7 @@ class Tools():
                 return True
         else:
             return False
+
 
 
     

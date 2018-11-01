@@ -49,15 +49,28 @@ class Users(Resource):
         user_info = request.get_json()
         username = user_info['username']
 
-        query = """ DELETE FROM users WHERE username = %s """
-        deleted = cur.execute(query, (username,))
-        conn.commit()
-
-        if deleted:
+        deleted = users.delete_user(username)
+        if deleted == True:
             return make_response(jsonify({"Status" : "Ok", "Message" : "Successfully Deleted The user"}), 200)
-        else:
-            return make_response(jsonify({"Status" : "NOT FOUND", "Message" : "The Database does not have the user"}), 404) 
 
+        else:
+            return make_response(jsonify({"Status" : "NOT FOUND", "Message" : "The Database does not have the user", "Reason" : deleted}), 404) 
+
+
+    def put(self):
+        user_info = request.get_json()
+
+        id = user_info['id']
+        username = user_info['username']
+        email = user_info['email']
+        phone_number = user_info['phone_number']
+        password = user_info['password']
+        confirm_password = user_info['confirm_password']
+
+        updated = users.update_user_infor(id, username, email, phone_number, password, confirm_password)
+        if updated == True:
+            return make_response(jsonify({"Status" : "Updated", "Messege" : "User updated successfully"}))
+        return make_response(jsonify({"Status" : "Failed", "Message" : "Could not Update The user", "Reason" : updated}))
 
 class Get_user_by_id(Resource):
 
@@ -85,7 +98,7 @@ class Login(Resource):
                 token = auth.encode_token(username, admin)
                 if token:
                     return make_response(jsonify({"Status" : "Ok", "Message" : "Successfully Logged in as {}".format(username),
-                    "access_token" : token.decode('UTF-8') }), 200)
+                    "access_token" : token.decode('UTF-8') }), 202)
             else:
                 return make_response(jsonify({"Status" : "NOT FOUND", "Message" : "Invalid Password"}), 404)
 

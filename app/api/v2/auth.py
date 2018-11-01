@@ -49,7 +49,7 @@ class Auth():
                        
                     
                 if token:
-                    if identity["admin"] == False:
+                    if not identity["admin"]:
                         return "Not Allowed!! Admin Only"
             return f(*args, **kwargs)
         return decorated

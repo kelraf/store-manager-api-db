@@ -21,15 +21,15 @@ class UserDetails():
                 #If The user does not exist validate the information provided and store the user in the database
                 validate = tools.validate_user_info(username, email, phone_number, password, confirm_password)
 
-                if validate:
+                if validate == True:
                     user_infor = {}
-                    user_infor['admin'] = "False"
+                    user_infor['admin'] = False
                     query = """ INSERT INTO users(username, email, phone_number, admin, password, confirm_password) VALUES(%s, %s, %s, %s, %s, %s)"""
 
                     cur.execute(query, (username, email, phone_number, user_infor['admin'], hash_pass_1, hash_pass_2))
                     conn.commit()
                     return True
-                return validate
+                return validate  
 
             return "The Password could not be hashed"
 
@@ -61,10 +61,18 @@ class UserDetails():
 
     @staticmethod
     def delete_user(username):
-        query = """ DELETE * FROM users WHERE id = %s """
-        cur.execute(query, (username))
-        conn.commit()
-        return True
+        query = """ SELECT * FROM users """
+        cur.execute(query)
+        users = cur.fetchall()
+        if users:
+            for user in users:
+                if user['username'] == username:
+                    query = """ DELETE FROM users WHERE username = %s """
+                    cur.execute(query, (username,))
+                    conn.commit()
+                    return True
+                return "user does not exist"
+        return "There no users in the database"
 
     @staticmethod
     def get_user_by_email(username):
@@ -76,3 +84,25 @@ class UserDetails():
                 if user['username'] == username:
                     return user
         return "The user does not exist"
+
+    @staticmethod
+    def update_user_infor(id, username, email, phone_number, password, confirm_password):
+        query = """ SELECT * FROM users """
+        cur.execute(query)
+        users = cur.fetchall()
+
+        if users:
+            for user in users:
+                if user['id'] == id:
+                    validate = tools.validate_user_info(username, email, phone_number, password, confirm_password)
+                    if validate:
+                        hash_pass_1 = generate_password_hash(password)
+                        hash_pass_2 = generate_password_hash(confirm_password)
+                        query = """ UPDATE users SET username = %s, phone_number = %s, password = %s, confirm_password = %s  """
+                        cur.execute(query, (username, email, phone_number, hash_pass_1, hash_pass_2))
+                        conn.commit()
+                        return True
+                    return validate
+            return "The user does not exist"
+        return "There are no users in the database"
+

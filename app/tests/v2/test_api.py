@@ -49,7 +49,8 @@ class TestApi(unittest.TestCase):
             "description" : "A blue dell"
         }
 
-    
+    def authenticate(self):
+        return self.client().post("/api/v2/login", data = json.dumps(self.login_admin), content_type = "application/json")
 
     def test_login_of_admin(self):
         response23 = self.client().post("/api/v2/login", data = json.dumps(self.login_admin), content_type = "application/json")
@@ -61,8 +62,10 @@ class TestApi(unittest.TestCase):
         self.assertAlmostEqual(response12.status_code, 404)
 
     def test_admin_can_create_attendant(self):
-        response23 = self.client().post("/api/v2/login", data = json.dumps(self.login_admin), content_type = "application/json")
-        self.assertEqual(response23.status_code, 202)
+        response23 = self.client().post("/api/v2/login", 
+                                    data = json.dumps(self.login_admin), 
+                                    content_type = "application/json")
+        self.assertEqual(response23.status_code, 201)
         
         data = json.loads(response23.get_data().decode("UTF-8"))
         token = data['access_token']

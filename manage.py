@@ -4,15 +4,15 @@ import os
 import sys
 from werkzeug.security import generate_password_hash
 
-db_url = os.getenv('DATABASE_URL')
+# db_url = os.getenv('DATABASE_URL')
 
-
+db_url = os.environ['DATABASE_URL'],sslmode='required'
 
 class DatabaseSetup():
 
     #Database connection setup
     def __init__(self):
-        self.connect = psycopg2.connect( db_url)
+        self.connect = psycopg2.connect( )
         self.cursor = self.connect.cursor(cursor_factory = RealDictCursor)
       
     def create_tables(self):

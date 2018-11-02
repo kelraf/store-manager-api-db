@@ -86,14 +86,14 @@ class UserDetails():
         return "The user does not exist"
 
     @staticmethod
-    def update_user_infor(id, username, email, phone_number, password, confirm_password):
+    def update_user_infor(username, email, phone_number, password, confirm_password):
         query = """ SELECT * FROM users """
         cur.execute(query)
         users = cur.fetchall()
 
         if users:
             for user in users:
-                if user['id'] == id:
+                if user['username'] == username:
                     validate = tools.validate_user_info(username, email, phone_number, password, confirm_password)
                     if validate:
                         hash_pass_1 = generate_password_hash(password)

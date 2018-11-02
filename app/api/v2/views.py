@@ -66,7 +66,7 @@ class Users(Resource):
         password = user_info['password']
         confirm_password = user_info['confirm_password']
 
-        updated = users.update_user_infor(id, username, email, phone_number, password, confirm_password)
+        updated = users.update_user_infor(username, email, phone_number, password, confirm_password)
         if updated == True:
             return make_response(jsonify({"Status" : "Updated", "Messege" : "User updated successfully"}))
         return make_response(jsonify({"Status" : "Failed", "Message" : "Could not Update The user", "Reason" : updated}))

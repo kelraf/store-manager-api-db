@@ -35,46 +35,46 @@ class TestValidators(unittest.TestCase):
 
     """ Testing Registration of users """
 
-    def test_successful_user_registration(self):
-        response6 = self.users.register("kelraf", "kel@gmail.com", "0700234912", "kelraf", "kelraf")
-        self.assertEqual(response6, True)
+    # def test_successful_user_registration(self):
+    #     response6 = self.users.register("kelraf", "kel@gmail.com", "0700234912", "kelraf", "kelraf")
+    #     self.assertEqual(response6, True)
 
-    def test_user_registration_with_invalid_info(self):
-        response7 = self.users.register("kelrtf", "kelgmail.com", "0703234912", "kelraf", "kelraf")
+    # def test_user_registration_with_invalid_info(self):
+    #     response7 = self.users.register("kelrtf", "kelgmail.com", "0703234912", "kelraf", "kelraf")
 
-        self.assertEqual(response7, "Invalid Email")
+    #     self.assertEqual(response7, "Invalid Email")
 
-    def test_user_cant_be_created_twice(self):
-        response8 = self.users.register("kelraf", "kel@gmail.com", "0700234912", "kelraf", "kelraf")
+    # def test_user_cant_be_created_twice(self):
+    #     response8 = self.users.register("kelraf", "kel@gmail.com", "0700234912", "kelraf", "kelraf")
 
-        self.assertEqual(response8, "User already Exists")
+    #     self.assertEqual(response8, "User already Exists")
 
-    def test_successfull_login(self):
-        response9 = self.users.login("admin1234")
-        self.assertTrue(response9)
+    # def test_successfull_login(self):
+    #     response9 = self.users.login("admin1234")
+    #     self.assertTrue(response9)
 
-    def test_login_with_invalid_info(self):
-        response10 = self.users.login("admin12")
-        self.assertEqual(response10, "User admin12, does not exist")
+    # def test_login_with_invalid_info(self):
+    #     response10 = self.users.login("admin12")
+    #     self.assertEqual(response10, "User admin12, does not exist")
 
-    def test_getting_all_users(self):
-        response11 = self.users.get_all_users()
+    # def test_getting_all_users(self):
+    #     response11 = self.users.get_all_users()
 
-        self.assertTrue(response11)
+    #     self.assertTrue(response11)
 
-    def test_get_user_by_id_unsuccessfull(self):
-        response12 = self.users.get_user_id(162)
-        self.assertFalse(response12)
+    # def test_get_user_by_id_unsuccessfull(self):
+    #     response12 = self.users.get_user_id(162)
+    #     self.assertFalse(response12)
 
-    def test_successfull_deletion_of_user(self):
-        response13 = self.users.delete_user("kelraf")
-        self.assertEqual(response13, True)
+    # def test_successfull_deletion_of_user(self):
+    #     response13 = self.users.delete_user("kelraf")
+    #     self.assertEqual(response13, True)
 
-    def test_unsuccessfull_deletion_of_user(self):
-        response13 = self.users.delete_user("kelraf")
-        self.assertTrue(response13)
+    # def test_unsuccessfull_deletion_of_user(self):
+    #     response13 = self.users.delete_user("kelraf")
+    #     self.assertTrue(response13)
 
-    def test_get_user_by_username(self):
-        response14 = self.users.get_user_by_email("admin1234")
+    # def test_get_user_by_username(self):
+    #     response14 = self.users.get_user_by_email("admin1234")
 
-        self.assertEqual(response14, True)
+    #     self.assertEqual(response14, True)

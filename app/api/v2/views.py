@@ -17,7 +17,6 @@ token_required = auth.token_required
 
 
 
-
 """ Routes for Users """
 
 class Users(Resource):
@@ -124,14 +123,26 @@ class Products(Resource):
         if response == True:
             return make_response(jsonify({"Status" : "CREATED", "Message" : "Product Created Successfully"}), 201)
         else:
-            return make_response(jsonify({"Status" : "CONFLICT", "Message" : "Product Product not created"}), 409)
+            return make_response(jsonify({"Status" : "CONFLICT", "Message" : "Product Product not created", "Reason" : response}), 409)
 
     @admin_only
     def get(self):
         response = products.get_all_products()        
         if len(response) > 0:
+            # list_prod = { "Dell" : len(products.get_specific("Dell")) }
             return make_response(jsonify({"Status" : "Ok", "Message" : "Successfull", "Products" : response, "No of Products" : len(response)}), 200)
         return make_response(jsonify({"Status" : "NOT FOUND", "Message" : "The Database does not have products"}), 404)
+
+    @admin_only
+    def delete(self):
+        product_info = {}
+
+        product_id = product_info['prod_id']
+
+        deleted = products.delete_product(product_id)
+        if deleted == True:
+            return make_response(jsonify({"Status" : "Ok", "Message" : "Successfully Deleted The Product"}), 200)
+        return make_response(jsonify({"Status" : "Not FOUND", "Message" : "Product Not Created"}), 404)
 
 
 class Get_product_by_id(Resource):

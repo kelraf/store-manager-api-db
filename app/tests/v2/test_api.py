@@ -62,18 +62,19 @@ class TestApi(unittest.TestCase):
 
     def test_admin_can_create_attendant(self):
         response23 = self.client().post("/api/v2/login", data = json.dumps(self.login_admin), content_type = "application/json")
-        self.assertAlmostEqual(response23.status_code, 202)
+        self.assertEqual(response23.status_code, 202)
+        
         data = json.loads(response23.get_data().decode("UTF-8"))
         token = data['access_token']
-        response21 = self.client().post("/api/v2/register", data = json.dumps(self.user_info),
-         headers = {'Authentication' : 'Bearer'+ token ,
-         "content_type" :"application/json"} 
-        )
-        print(response21)
-        data = json.loads(response21.get_data().decode())
-        # print(response21.headers)
 
-        self.assertEqual(token, 201)
+        response21 = self.client().post("/api/v2/register", data = json.dumps(self.user_info),
+         headers = {'Authentication' : 'Bearer'+ token} ,
+         content_type ="application/json" 
+        )
+
+        data = json.loads(response21.get_data().decode())
+
+        self.assertEqual(data, 200)
 
     # def test_user_registration(self):
     #     response = self.client().post("/api/v2/register", data = json.dumps(self.user_info), content_type = "application/json")

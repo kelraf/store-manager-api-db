@@ -1,5 +1,5 @@
 import jwt, os, datetime
-from flask import request
+from flask import request, make_response, jsonify
 from functools import wraps
 
 secret_key = "os.getenv(SECRET_KEY)"
@@ -37,7 +37,7 @@ class Auth():
             token = None
             authentication_header = request.headers.get('Authorization')
             if not authentication_header:
-                return "Authentication Required"
+                return make_response(jsonify({"Status" : "FORBIDDEN", "Message" : "Authentication Required"}), 403)
             if authentication_header:    
                 try:
                     token = authentication_header.split(" ")[1]
@@ -45,12 +45,11 @@ class Auth():
                     identity = jwt.decode(token, secret_key)                 
 
                 except Exception:
-                    return  'You are not authorized'
-                       
+                    return  make_response(jsonify({"Status" : "UNAUTHORIZED", "Message" : "Invalid Token"}), 401)                      
                     
                 if token:
                     if not identity["admin"]:
-                        return "Not Allowed!! Admin Only"
+                        return make_response(jsonify({"Status" : "FORBIDDEN", "Message" : "Not Allowed!! Admin Only"}), 403)
             return f(*args, **kwargs)
         return decorated
 
@@ -62,7 +61,7 @@ class Auth():
             token = None
             authentication_header = request.headers.get('Authorization')
             if not authentication_header:
-                return "Authentication Required"
+                return make_response(jsonify({"Status" : "FORBIDDEN", "Message" : "Authentication Required"}), 403)
             if authentication_header:    
                 try:
                     token = authentication_header.split(" ")[1]
@@ -70,8 +69,8 @@ class Auth():
                     if token:
                         identity = jwt.decode(token, secret_key)
                     else:
-                        return "Token Required"
+                        return  make_response(jsonify({"Status" : "UNAUTHORIZED", "Message" : "Token Required"}), 401)
                 except Exception:
-                    return 'Token Required'
+                    return  make_response(jsonify({"Status" : "UNAUTHORIZED", "Message" : "Invalid Token"}), 401)
             return t(*args, **kwargs)
         return decorated_token

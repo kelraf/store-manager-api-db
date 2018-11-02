@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/kelraf/store-manager-api-db.svg?branch=develop)](https://travis-ci.org/kelraf/store-manager-api-db)
+[![Coverage Status](https://coveralls.io/repos/github/kelraf/store-manager-api-db/badge.svg?branch=master)](https://coveralls.io/github/kelraf/store-manager-api-db?branch=master)
 
 # store-manager-api-db
 Store Manager is a web application that helps store owners manage sales and product inventory records. This application is meant for use in a single store.

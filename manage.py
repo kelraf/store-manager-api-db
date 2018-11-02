@@ -12,7 +12,7 @@ class DatabaseSetup():
 
     #Database connection setup
     def __init__(self):
-        self.connect = psycopg2.connect( )
+        self.connect = psycopg2.connect(db_url)
         self.cursor = self.connect.cursor(cursor_factory = RealDictCursor)
       
     def create_tables(self):

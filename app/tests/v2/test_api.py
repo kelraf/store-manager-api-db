@@ -1,14 +1,15 @@
 import unittest 
 from flask import json
 from app import create_app
-from manage import DatabaseSetup as setup
+from manage import DatabaseSetup
 
 class TestApi(unittest.TestCase):
 
     def setUp(self):
+        setup = DatabaseSetup
         self.app = create_app(config_name = 'testing')
         self.client = self.app.test_client
-        # setup.create_tables(self)
+        # setup.create_tables()
 
         self.user_info = {
             "username" : "kelvle",
@@ -36,9 +37,18 @@ class TestApi(unittest.TestCase):
             "password" : "admin1234" 
         }
 
+        self.login_attendant = {
+            "username" : "kelraf",
+            "password" : "kelraf" 
+        }
+
         self.login_admin_invalid = {
             "username" : "admin1234",
             "password" : "admin12" 
+        }
+
+        self.delete_att = {
+            "username" : "kelvle"
         }
 
         self.product_info = {
@@ -49,8 +59,17 @@ class TestApi(unittest.TestCase):
             "description" : "A blue dell"
         }
 
-    def authenticate(self):
-        return self.client().post("/api/v2/login", data = json.dumps(self.login_admin), content_type = "application/json")
+        self.product_info_ivalid = {
+            "name" : "",
+            "category" : "Dell",
+            "buying_price" : 70000,
+            "selling_price" : 80000,
+            "description" : " "
+        }
+
+        self.sales = {
+            "product_id" : 5
+        }
 
     def test_login_of_admin(self):
         response23 = self.client().post("/api/v2/login", data = json.dumps(self.login_admin), content_type = "application/json")
@@ -62,49 +81,178 @@ class TestApi(unittest.TestCase):
         self.assertAlmostEqual(response12.status_code, 404)
 
     def test_admin_can_create_attendant(self):
-        response23 = self.client().post("/api/v2/login", 
-                                    data = json.dumps(self.login_admin), 
-                                    content_type = "application/json")
-        self.assertEqual(response23.status_code, 201)
-        
-        data = json.loads(response23.get_data().decode("UTF-8"))
+        response23 = self.client().post("/api/v2/login", data = json.dumps(self.login_admin), content_type = "application/json")
+        self.assertEqual(response23.status_code, 202)
+        data = response23.json
         token = data['access_token']
 
         response21 = self.client().post("/api/v2/register", data = json.dumps(self.user_info),
-         headers = {'Authentication' : 'Bearer'+ token} ,
+         headers = {'Authorization' : 'Bearer'" "+ token} ,
          content_type ="application/json" 
         )
 
         data = json.loads(response21.get_data().decode())
 
-        self.assertEqual(data, 200)
+        self.assertEqual(response21.status_code, 201)
 
-    # def test_user_registration(self):
-    #     response = self.client().post("/api/v2/register", data = json.dumps(self.user_info), content_type = "application/json")
+    def test_admin_cannot_create_more_thanone_attendant_with_similar_datails(self):
+        response = self.client().post("/api/v2/login", data = json.dumps(self.login_admin), content_type = "application/json")
+        data = response.json
+        token = data['access_token']
 
-        # self.assertEqual(response.status_code, 201)
+        response1 = self.client().post("/api/v2/register", data = json.dumps(self.user_infor), content_type = "application/json",
+        headers = {"Authorization" : "Bearer" " " + token})
 
-    # def test_cant_create_user_twice(self):
-    #     response1 = self.client().post("/api/v2/login", data = json.dumps(self.user_login), content_type = "application/json")
-    #     data = response1.json
+        response2 = self.client().post("/api/v2/register", data = json.dumps(self.user_infor), content_type = "application/json",
+        headers = {"Authorization" : "Bearer" " " + token})
 
-    #     self.assertEqual(data['message'], "Successfully Logged in as kelvole")
+        self.assertEqual(response2.status_code, 409)
 
-    # def test_product_creating(self):
+    def test_admin_can_view_all_attendant(self):
 
-    #     response4 = self.client().post("/api/v2/register", data = json.dumps(self.user_infor), content_type = "application/json")
+        #These Log in the admin
+        response44 = self.client().post("/api/v2/login", data = json.dumps(self.login_admin), content_type = "application/json")
+        self.assertEqual(response44.status_code, 202)
 
-    #     response2 = self.client().post("/api/v2/login", data = json.dumps(self.user_login), content_type = "application/json")
-    #     data = response2.json
+        data = response44.json
+        token = data['access_token']
 
-    #     token = data["access_token"]
+        # data = json.loads(response44.get_data().decode())
+        response41 = self.client().get("/api/v2/register", headers = {"Authorization" : "Bearer" " " + token})
+        self.assertEqual(response41.status_code, 200)
 
-    #     response3 = self.client().post("/api/v2/products", data = json.dumps(self.product_info),
-    #     content_type = "application/json",
-    #     headers={'Authorization': 'Bearer ' + token})
+    def test_admin_can_delete_an_attendant(self):
+        response = self.client().post("/api/v2/login", data = json.dumps(self.login_admin), content_type = "application/json")
+        self.assertEqual(response.status_code, 202)
 
-    #     self.assertEqual(response3.status_code, 201)
+        data = response.json
+        token = data['access_token']
+
+        response21 = self.client().delete("/api/v2/register", data = json.dumps(self.delete_att), content_type = "application/json", 
+        headers = {"Authorization" : "Bearer" " " + token}  )
+
+        self.assertEqual(response21.status_code, 200)
 
 
-    # def tearDown(self):
-    #     setup.delete_tables(self)
+    def test_admin_cant_delete_an_attendant_that_does_not_exist(self):
+        response = self.client().post("/api/v2/login", data = json.dumps(self.login_admin), content_type = "application/json")
+        self.assertEqual(response.status_code, 202)
+
+        data = response.json
+        token = data['access_token']
+
+        response21 = self.client().delete("/api/v2/register", data = json.dumps(self.delete_att), content_type = "application/json", 
+        headers = {"Authorization" : "Bearer" " " + token}  )
+
+        self.assertEqual(response21.status_code, 404)
+
+
+    def test_admin_can_get_a_user_by_id(self):
+        response = self.client().post("/api/v2/login", data = json.dumps(self.login_admin), content_type = "application/json")
+        self.assertEqual(response.status_code, 202)
+
+        data = response.json
+        token = data['access_token']
+
+        response21 = self.client().get("/api/v2/register/112",  headers = {"Authorization" : "Bearer" " " + token}  )
+
+        self.assertEqual(response21.status_code, 200)
+
+
+
+    
+    def test_admin_cant_get_a_user_by_id_that_does_not_exist(self):
+        response = self.client().post("/api/v2/login", data = json.dumps(self.login_admin), content_type = "application/json")
+        self.assertEqual(response.status_code, 202)
+
+        data = response.json
+        token = data['access_token']
+
+        response21 = self.client().get("/api/v2/register/1",  headers = {"Authorization" : "Bearer" " " + token}  )
+
+        self.assertEqual(response21.status_code, 404)
+
+
+
+    def test_admin_can_create_products(self):
+        response = self.client().post("/api/v2/login", data = json.dumps(self.login_admin), content_type = "application/json")
+        data = response.json
+        token = data['access_token']
+
+        response2 = self.client().post("/api/v2/products", data = json.dumps(self.product_info), content_type = "application/json",
+        headers = {"Authorization" : "Bearer" " " + token})
+
+        self.assertEqual(response2.status_code, 201)
+
+
+
+    def test_create_endpoint_returns_an_error_message_on_invalid_product_infor(self):
+        response = self.client().post("/api/v2/login", data = json.dumps(self.login_admin), content_type = "application/json")
+        data = response.json
+        token = data['access_token']
+
+        response1 = self.client().post("/api/v2/products", data = json.dumps(self.product_info_ivalid), content_type = "application/json",
+        headers = {"Authorization" : "Bearer" " " + token})
+
+        self.assertEqual(response1.status_code, 409)
+
+
+
+
+    def test_admin_get_all_products(self):
+        response = self.client().post("/api/v2/login", data = json.dumps(self.login_admin), content_type = "application/json")
+        data = response.json
+        token = data['access_token']
+
+        response1 = self.client().get("/api/v2/products",
+        headers = {"Authorization" : "Bearer" " " + token})
+
+        self.assertEqual(response1.status_code, 200)
+
+
+    def test_attendant_can_make_sale(self):
+        response = self.client().post("/api/v2/login", data = json.dumps(self.login_attendant), content_type = "application/json")
+        data = response.json
+        token = data['access_token']
+        self.assertEqual(response.status_code, 202)
+
+        response1 = self.client().post("/api/v2/sales", data = json.dumps(self.sales), content_type = "application/json", 
+        headers = {"Authorization" : "Bearer" " " + token})
+
+        self.assertEqual(response1.status_code, 201)
+
+
+
+    def test_attendant_can_get_sale_made(self):
+        response = self.client().post("/api/v2/login", data = json.dumps(self.login_attendant), content_type = "application/json")
+        data = response.json
+        token = data['access_token']
+        self.assertEqual(response.status_code, 202)
+
+        response1 = self.client().get("/api/v2/sales", headers = {"Authorization" : "Bearer" " " + token})
+
+        self.assertEqual(response1.status_code, 200)
+
+
+
+    def test_attendant_can_get_sale_made_by_id(self):
+        response = self.client().post("/api/v2/login", data = json.dumps(self.login_attendant), content_type = "application/json")
+        data = response.json
+        token = data['access_token']
+        self.assertEqual(response.status_code, 202)
+
+        response1 = self.client().get("/api/v2/sales/2", headers = {"Authorization" : "Bearer" " " + token})
+
+        self.assertEqual(response1.status_code, 200)
+
+
+
+    def test_attendant_cant_get_sale_made_by_id_that_does_not_exist(self):
+        response = self.client().post("/api/v2/login", data = json.dumps(self.login_attendant), content_type = "application/json")
+        data = response.json
+        token = data['access_token']
+        self.assertEqual(response.status_code, 202)
+
+        response1 = self.client().get("/api/v2/sales/57", headers = {"Authorization" : "Bearer" " " + token})
+
+        self.assertEqual(response1.status_code, 404)

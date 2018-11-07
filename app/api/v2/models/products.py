@@ -64,7 +64,7 @@ class ProductsDetails():
                     cur.execute(query, (id,))
                     conn.commit()
                     return True
-                return "Product does not exist"
+            return "Product does not exist"
         return "There no Products in the database"
 
     

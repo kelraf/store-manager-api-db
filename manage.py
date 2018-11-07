@@ -6,7 +6,7 @@ from werkzeug.security import generate_password_hash
 
 # db_url = os.getenv('DATABASE_URL')
 
-db_url = os.environ['DATABASE_URL'],sslmode='required'
+db_url = os.getenv('DATABASE_URL')
 
 class DatabaseSetup():
 

@@ -1,7 +1,7 @@
 from app.api import Tools 
 import uuid
 from werkzeug.security import generate_password_hash
-from app.api.v2.models import conn, cur
+from ..models import conn, cur
 
 tools = Tools()
 
@@ -64,15 +64,15 @@ class UserDetails():
         query = """ SELECT * FROM users """
         cur.execute(query)
         users = cur.fetchall()
-        if users:
-            for user in users:
-                if user['username'] == username:
-                    query = """ DELETE FROM users WHERE username = %s """
-                    cur.execute(query, (username,))
-                    conn.commit()
-                    return True
-                return "user does not exist"
-        return "There no users in the database"
+        if not users:
+            return "There no users in the database"
+        for user in users:
+            if user['username'] == username:
+                query = """ DELETE FROM users WHERE username = %s """
+                cur.execute(query, (username,))
+                conn.commit()
+                return True
+        return "user does not exist"
 
     @staticmethod
     def get_user_by_email(username):
@@ -95,14 +95,14 @@ class UserDetails():
             for user in users:
                 if user['username'] == username:
                     validate = tools.validate_user_info(username, email, phone_number, password, confirm_password)
-                    if validate:
+                    if validate == True:
                         hash_pass_1 = generate_password_hash(password)
                         hash_pass_2 = generate_password_hash(confirm_password)
-                        query = """ UPDATE users SET username = %s, phone_number = %s, password = %s, confirm_password = %s  """
-                        cur.execute(query, (username, email, phone_number, hash_pass_1, hash_pass_2))
+                        query = """ UPDATE users SET email = %s, phone_number = %s, password = %s, confirm_password = %s
+                         WHERE username = %s """
+                        cur.execute(query, (email, phone_number, hash_pass_1, hash_pass_2, username))
                         conn.commit()
                         return True
                     return validate
             return "The user does not exist"
         return "There are no users in the database"
-

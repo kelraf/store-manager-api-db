@@ -39,15 +39,19 @@ class Auth():
             if not authentication_header:
                 return make_response(jsonify({"Status" : "FORBIDDEN", "Message" : "Authentication Required"}), 403)
             if authentication_header:    
+                token = authentication_header.split(" ")[1]
+                if not token:
+                    return make_response(jsonify({"Status" : "FORBIDDEN", "Message" : "Please Provide A Token"}), 403)
+                    
                 try:
-                    token = authentication_header.split(" ")[1]
-                        
-                    identity = jwt.decode(token, secret_key)                 
+                    identity = jwt.decode(token, secret_key, algorithms='HS256') 
+                except jwt.ExpiredSignatureError:
+                    return make_response(jsonify({"Message" : "Expired Signature Please log in again"}), 403)
 
-                except Exception:
+                except jwt.InvalidTokenError:
                     return  make_response(jsonify({"Status" : "UNAUTHORIZED", "Message" : "Invalid Token"}), 401)                      
                     
-                if token:
+                if identity:
                     if not identity["admin"]:
                         return make_response(jsonify({"Status" : "FORBIDDEN", "Message" : "Not Allowed!! Admin Only"}), 403)
             return f(*args, **kwargs)
@@ -63,14 +67,18 @@ class Auth():
             if not authentication_header:
                 return make_response(jsonify({"Status" : "FORBIDDEN", "Message" : "Authentication Required"}), 403)
             if authentication_header:    
-                try:
-                    token = authentication_header.split(" ")[1]
+                token = authentication_header.split(" ")[1]
 
-                    if token:
-                        identity = jwt.decode(token, secret_key)
-                    else:
-                        return  make_response(jsonify({"Status" : "UNAUTHORIZED", "Message" : "Token Required"}), 401)
-                except Exception:
-                    return  make_response(jsonify({"Status" : "UNAUTHORIZED", "Message" : "Invalid Token"}), 401)
+                if not token:
+                    return make_response(jsonify({"Status" : "FORBIDDEN", "Message" : "Please Provide A Token"}), 403)
+                try:
+                    identity = jwt.decode(token, secret_key, algorithms='HS256') 
+                except jwt.ExpiredSignatureError:
+                    return make_response(jsonify({"Message" : "Expired Signature Please log in again"}), 403)
+
+                except jwt.InvalidTokenError:
+                    return  make_response(jsonify({"Status" : "UNAUTHORIZED", "Message" : "Invalid Token"}), 401)                      
+                    
+                
             return t(*args, **kwargs)
         return decorated_token

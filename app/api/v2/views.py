@@ -59,7 +59,6 @@ class Users(Resource):
     def put(self):
         user_info = request.get_json()
 
-        id = user_info['id']
         username = user_info['username']
         email = user_info['email']
         phone_number = user_info['phone_number']
@@ -70,6 +69,7 @@ class Users(Resource):
         if updated == True:
             return make_response(jsonify({"Status" : "Updated", "Messege" : "User updated successfully"}))
         return make_response(jsonify({"Status" : "Failed", "Message" : "Could not Update The user", "Reason" : updated}))
+        
 
 class Get_user_by_id(Resource):
 
@@ -129,20 +129,19 @@ class Products(Resource):
     def get(self):
         response = products.get_all_products()        
         if len(response) > 0:
-            # list_prod = { "Dell" : len(products.get_specific("Dell")) }
             return make_response(jsonify({"Status" : "Ok", "Message" : "Successfull", "Products" : response, "No of Products" : len(response)}), 200)
         return make_response(jsonify({"Status" : "NOT FOUND", "Message" : "The Database does not have products"}), 404)
 
     @admin_only
     def delete(self):
-        product_info = {}
+        product_info = request.get_json()
 
-        product_id = product_info['prod_id']
+        product_id = product_info['product_id']
 
         deleted = products.delete_product(product_id)
         if deleted == True:
             return make_response(jsonify({"Status" : "Ok", "Message" : "Successfully Deleted The Product"}), 200)
-        return make_response(jsonify({"Status" : "Not FOUND", "Message" : "Product Not Created"}), 404)
+        return make_response(jsonify({"Status" : "Not FOUND", "Message" : "Product Not Deleted", "Reason" : deleted}), 404)
 
 
 class Get_product_by_id(Resource):
@@ -177,7 +176,7 @@ class Sales(Resource):
         if sales_:
             return make_response(jsonify({"Status" : "Ok", "Message" : "Successful", "Sales" : sales_}), 200)
         else: 
-            return make_response(jsonify({"Status" : "Not Found", "Message" : "No Sales Made Yet"})) 
+            return make_response(jsonify({"Status" : "Not Found", "Message" : "No Sales Made Yet"}), 404) 
 
 
 class Get_Sales_by_id(Resource):
@@ -186,7 +185,7 @@ class Get_Sales_by_id(Resource):
     def get(self, id):
 
 
-        query = """ SELECT * FROM products """
+        query = """ SELECT * FROM sales """
         cur.execute(query)
         sales = cur.fetchall()
         if sales:
